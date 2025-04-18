@@ -1,20 +1,20 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-
+import type { RootState } from "@/store";
 import type { Bet, BetStatus, FilterStatus } from "@/types";
 
 export interface BetsState {
   bets: Bet[];
-  filter: FilterStatus;
+  activeFilter: FilterStatus;
 }
 
 const initialState: BetsState = {
   bets: [],
-  filter: "All",
+  activeFilter: "All",
 };
 
 export const betSlice = createSlice({
-  name: "bet",
+  name: "bets",
   initialState,
   reducers: {
     setBets: (state, action: PayloadAction<Bet[]>) => {
@@ -31,10 +31,21 @@ export const betSlice = createSlice({
       }
     },
     setFilter: (state, action: PayloadAction<BetStatus | "All">) => {
-      state.filter = action.payload;
+      state.activeFilter = action.payload;
     },
   },
 });
+
+export const filteredBetsSelector = createSelector(
+  (state: RootState) => state.betReducer.bets,
+  (state: RootState) => state.betReducer.activeFilter,
+  (bets, activeFilter) => {
+    if (activeFilter === "All") {
+      return bets;
+    }
+    return bets.filter((bet) => bet.status === activeFilter);
+  }
+);
 
 export const { setBets, updateBetStatus, setFilter } = betSlice.actions;
 
